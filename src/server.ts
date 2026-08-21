@@ -16,7 +16,7 @@ interface JsonRpcRequest {
 
 const TOOL_NAME = 'convert';
 
-const TOOLS = [
+export const TOOLS = [
   {
     name: TOOL_NAME,
     description:
@@ -76,7 +76,7 @@ function handleToolsCall(id: number | string, params: Record<string, unknown> | 
   }
 }
 
-function handleRequest(req: JsonRpcRequest): void {
+export function handleRequest(req: JsonRpcRequest): void {
   const { id, method, params } = req;
 
   // Notifications carry no id and get no response.
