@@ -33,6 +33,14 @@ units belong to different dimensions.
 1 km   -> kg  =>  error: dimension mismatch
 ```
 
+Pass `conversions` (an array of `{ value, from, to }`) instead of `value`/`from`/`to`
+to run several conversions in one call. Each item succeeds or fails on its own, so
+one bad unit doesn't stop the rest of the batch:
+
+```json
+{ "conversions": [{ "value": 1, "from": "km", "to": "m" }, { "value": 100, "from": "C", "to": "F" }] }
+```
+
 ## Test
 
 ```bash

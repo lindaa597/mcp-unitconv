@@ -83,6 +83,54 @@ test('tools/call with malformed arguments reports isError', () => {
   assert.match(msg.result.content[0].text, /expected/);
 });
 
+test('tools/call with a batch of conversions returns one result per item', () => {
+  const [msg] = captureWrites(() => {
+    handleRequest({
+      jsonrpc: '2.0',
+      id: 8,
+      method: 'tools/call',
+      params: {
+        name: 'convert',
+        arguments: {
+          conversions: [
+            { value: 1, from: 'km', to: 'm' },
+            { value: 100, from: 'C', to: 'F' },
+          ],
+        },
+      },
+    });
+  });
+  assert.equal(msg.result.isError, false);
+  const payload = JSON.parse(msg.result.content[0].text);
+  assert.equal(payload.length, 2);
+  assert.equal(payload[0].value, 1000);
+  assert.equal(payload[1].value, 212);
+});
+
+test('tools/call with a batch reports isError when any item fails, without dropping the others', () => {
+  const [msg] = captureWrites(() => {
+    handleRequest({
+      jsonrpc: '2.0',
+      id: 9,
+      method: 'tools/call',
+      params: {
+        name: 'convert',
+        arguments: {
+          conversions: [
+            { value: 1, from: 'km', to: 'm' },
+            { value: 1, from: 'km', to: 'kg' },
+          ],
+        },
+      },
+    });
+  });
+  assert.equal(msg.result.isError, true);
+  const payload = JSON.parse(msg.result.content[0].text);
+  assert.equal(payload[0].value, 1000);
+  assert.equal(payload[0].error, undefined);
+  assert.match(payload[1].error, /量纲不匹配/);
+});
+
 test('tools/call with an unknown tool name is a protocol error', () => {
   const [msg] = captureWrites(() => {
     handleRequest({

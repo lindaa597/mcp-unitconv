@@ -23,18 +23,55 @@ export const TOOLS = [
     description:
       'Convert a numeric value between units of the same dimension ' +
       '(length, mass, time, temperature). Fails if the units belong to ' +
-      'different dimensions.',
+      'different dimensions. Pass `conversions` instead of value/from/to to ' +
+      'run a batch in one call; each item succeeds or fails independently.',
     inputSchema: {
       type: 'object',
       properties: {
-        value: { type: 'number', description: 'the numeric value to convert' },
+        value: { type: 'number', description: 'the numeric value to convert (single conversion)' },
         from: { type: 'string', description: `source unit, one of: ${supportedUnits().join(', ')}` },
         to: { type: 'string', description: `target unit, one of: ${supportedUnits().join(', ')}` },
+        conversions: {
+          type: 'array',
+          description: 'a batch of conversions to run in one call; when present, value/from/to are ignored',
+          items: {
+            type: 'object',
+            properties: {
+              value: { type: 'number' },
+              from: { type: 'string' },
+              to: { type: 'string' },
+            },
+            required: ['value', 'from', 'to'],
+          },
+        },
       },
-      required: ['value', 'from', 'to'],
     },
   },
 ];
+
+interface BatchItemResult {
+  value?: number;
+  from: string;
+  to: string;
+  dimension?: string;
+  error?: string;
+}
+
+function convertBatchItem(item: unknown): BatchItemResult {
+  const { value, from, to } = (item ?? {}) as Record<string, unknown>;
+  if (typeof value !== 'number' || typeof from !== 'string' || typeof to !== 'string') {
+    return {
+      from: typeof from === 'string' ? from : String(from),
+      to: typeof to === 'string' ? to : String(to),
+      error: 'expected { value: number, from: string, to: string }',
+    };
+  }
+  try {
+    return convert(value, from, to);
+  } catch (err) {
+    return { from, to, error: err instanceof Error ? err.message : String(err) };
+  }
+}
 
 function send(message: Record<string, unknown>): void {
   process.stdout.write(JSON.stringify(message) + '\n');
@@ -58,6 +95,15 @@ function handleToolsCall(id: number | string, params: Record<string, unknown> | 
   }
 
   try {
+    if (Array.isArray(args.conversions)) {
+      const results = args.conversions.map(convertBatchItem);
+      sendResult(id, {
+        content: [{ type: 'text', text: JSON.stringify(results) }],
+        isError: results.some((r) => r.error !== undefined),
+      });
+      return;
+    }
+
     const value = args.value;
     const from = args.from;
     const to = args.to;
