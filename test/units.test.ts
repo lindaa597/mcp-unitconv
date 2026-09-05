@@ -64,6 +64,17 @@ test('dimensionOf finds the right table', () => {
   assert.equal(dimensionOf('parsecs'), null);
 });
 
+test('dimensionOf recognizes temperature units', () => {
+  assert.equal(dimensionOf('C'), 'temperature');
+  assert.equal(dimensionOf('F'), 'temperature');
+  assert.equal(dimensionOf('K'), 'temperature');
+});
+
+test('a temperature unit paired with a non-temperature unit is a dimension mismatch', () => {
+  assert.throws(() => convert(100, 'C', 'kg'), /量纲不匹配/);
+  assert.throws(() => convert(1, 'kg', 'F'), /量纲不匹配/);
+});
+
 test('supportedUnits includes every table plus temperature', () => {
   const units = supportedUnits();
   for (const u of ['m', 'kg', 's', 'C', 'F', 'K']) {

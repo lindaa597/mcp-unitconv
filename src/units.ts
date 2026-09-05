@@ -5,6 +5,8 @@ const FACTORS: Record<string, Record<string, number>> = {
   time: { s: 1, min: 60, h: 3600, d: 86400, ms: 0.001 },
 };
 
+const TEMPS = ['C', 'F', 'K'];
+
 export interface ConvertResult {
   value: number;
   from: string;
@@ -12,8 +14,9 @@ export interface ConvertResult {
   dimension: string;
 }
 
-/** 找出某个单位属于哪个量纲，找不到返回 null。 */
+/** 找出某个单位属于哪个量纲，找不到返回 null。温度单位不在 FACTORS 里，单独判断。 */
 export function dimensionOf(unit: string): string | null {
+  if (TEMPS.includes(unit)) return 'temperature';
   for (const [dim, table] of Object.entries(FACTORS)) {
     if (unit in table) return dim;
   }
@@ -42,7 +45,6 @@ export function convert(value: number, from: string, to: string): ConvertResult 
 
 /** 温度换算，非温度单位返回 null。 */
 function convertTemperature(value: number, from: string, to: string): number | null {
-  const TEMPS = ['C', 'F', 'K'];
   if (!TEMPS.includes(from) || !TEMPS.includes(to)) return null;
   const celsius = from === 'C' ? value : from === 'F' ? (value - 32) / 1.8 : value - 273.15;
   return to === 'C' ? celsius : to === 'F' ? celsius * 1.8 + 32 : celsius + 273.15;
