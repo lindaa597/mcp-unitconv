@@ -131,6 +131,32 @@ test('tools/call with a batch reports isError when any item fails, without dropp
   assert.match(payload[1].error, /量纲不匹配/);
 });
 
+test('tools/call with a malformed batch item normalizes non-string from/to for reporting', () => {
+  const [msg] = captureWrites(() => {
+    handleRequest({
+      jsonrpc: '2.0',
+      id: 10,
+      method: 'tools/call',
+      params: {
+        name: 'convert',
+        arguments: {
+          conversions: [
+            { value: '100', from: 'C', to: 'F' },
+            { value: 1, from: 42, to: null },
+          ],
+        },
+      },
+    });
+  });
+  assert.equal(msg.result.isError, true);
+  const payload = JSON.parse(msg.result.content[0].text);
+  assert.match(payload[0].error, /expected/);
+  assert.equal(payload[0].from, 'C');
+  assert.match(payload[1].error, /expected/);
+  assert.equal(payload[1].from, '42');
+  assert.equal(payload[1].to, 'null');
+});
+
 test('tools/call with an unknown tool name is a protocol error', () => {
   const [msg] = captureWrites(() => {
     handleRequest({
