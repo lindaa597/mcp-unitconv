@@ -31,7 +31,7 @@ export function convert(value: number, from: string, to: string): ConvertResult 
   if (!Number.isFinite(value)) throw new Error(`value 必须是有限数字: ${value}`);
 
   const temp = convertTemperature(value, from, to);
-  if (temp !== null) return { value: temp, from, to, dimension: 'temperature' };
+  if (temp !== null) return { value: cleanFloat(temp), from, to, dimension: 'temperature' };
 
   const dFrom = dimensionOf(from);
   const dTo = dimensionOf(to);
@@ -40,7 +40,18 @@ export function convert(value: number, from: string, to: string): ConvertResult 
   if (dFrom !== dTo) throw new Error(`量纲不匹配: ${from} 是 ${dFrom}，${to} 是 ${dTo}`);
 
   const table = FACTORS[dFrom];
-  return { value: (value * table[from]) / table[to], from, to, dimension: dFrom };
+  return { value: cleanFloat((value * table[from]) / table[to]), from, to, dimension: dFrom };
+}
+
+/**
+ * Chained float division/multiplication (e.g. 1609.344 / 0.3048) routinely lands
+ * a couple ULPs off a round number. Rounding to 12 significant digits clears
+ * that binary-floating-point noise while staying well inside a double's ~15-17
+ * digits of real precision.
+ */
+function cleanFloat(value: number): number {
+  if (!Number.isFinite(value) || value === 0) return value;
+  return Number(value.toPrecision(12));
 }
 
 /** 温度换算，非温度单位返回 null。 */

@@ -20,7 +20,14 @@ test('time conversion', () => {
 
 test('imperial length round-trips through the base unit', () => {
   const r = convert(1, 'mi', 'ft');
-  assert.ok(Math.abs(r.value - 5280) < 1e-6);
+  assert.equal(r.value, 5280);
+});
+
+test('conversions land on exact round numbers instead of floating-point noise', () => {
+  // The raw arithmetic behind these (e.g. 37 * 1.8) picks up trailing binary
+  // floating-point noise in JS; convert() must clean that up before returning.
+  assert.equal(convert(1, 'ft', 'in').value, 12);
+  assert.equal(convert(37, 'C', 'F').value, 98.6);
 });
 
 test('temperature: celsius to fahrenheit', () => {
