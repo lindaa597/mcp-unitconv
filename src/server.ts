@@ -22,7 +22,7 @@ export const TOOLS = [
     name: TOOL_NAME,
     description:
       'Convert a numeric value between units of the same dimension ' +
-      '(length, mass, time, temperature). Fails if the units belong to ' +
+      '(length, mass, time, volume, temperature). Fails if the units belong to ' +
       'different dimensions. Pass `conversions` instead of value/from/to to ' +
       'run a batch in one call; each item succeeds or fails independently.',
     inputSchema: {

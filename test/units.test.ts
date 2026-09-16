@@ -23,6 +23,16 @@ test('imperial length round-trips through the base unit', () => {
   assert.equal(r.value, 5280);
 });
 
+test('volume conversion', () => {
+  const r = convert(1, 'gal', 'qt');
+  assert.equal(r.value, 4);
+  assert.equal(r.dimension, 'volume');
+});
+
+test('volume: liters to milliliters', () => {
+  assert.equal(convert(1, 'l', 'ml').value, 1000);
+});
+
 test('conversions land on exact round numbers instead of floating-point noise', () => {
   // The raw arithmetic behind these (e.g. 37 * 1.8) picks up trailing binary
   // floating-point noise in JS; convert() must clean that up before returning.
@@ -68,6 +78,7 @@ test('non-finite value throws', () => {
 test('dimensionOf finds the right table', () => {
   assert.equal(dimensionOf('kg'), 'mass');
   assert.equal(dimensionOf('ms'), 'time');
+  assert.equal(dimensionOf('l'), 'volume');
   assert.equal(dimensionOf('parsecs'), null);
 });
 
@@ -84,7 +95,7 @@ test('a temperature unit paired with a non-temperature unit is a dimension misma
 
 test('supportedUnits includes every table plus temperature', () => {
   const units = supportedUnits();
-  for (const u of ['m', 'kg', 's', 'C', 'F', 'K']) {
+  for (const u of ['m', 'kg', 's', 'l', 'C', 'F', 'K']) {
     assert.ok(units.includes(u), `expected ${u} in supportedUnits()`);
   }
 });
