@@ -62,12 +62,12 @@ test('same unit is a no-op', () => {
 });
 
 test('dimension mismatch throws', () => {
-  assert.throws(() => convert(1, 'km', 'kg'), /量纲不匹配/);
+  assert.throws(() => convert(1, 'km', 'kg'), /dimension mismatch/);
 });
 
 test('unknown unit throws', () => {
-  assert.throws(() => convert(1, 'km', 'parsecs'), /未知单位/);
-  assert.throws(() => convert(1, 'parsecs', 'km'), /未知单位/);
+  assert.throws(() => convert(1, 'km', 'parsecs'), /unknown unit/);
+  assert.throws(() => convert(1, 'parsecs', 'km'), /unknown unit/);
 });
 
 test('non-finite value throws', () => {
@@ -89,8 +89,8 @@ test('dimensionOf recognizes temperature units', () => {
 });
 
 test('a temperature unit paired with a non-temperature unit is a dimension mismatch', () => {
-  assert.throws(() => convert(100, 'C', 'kg'), /量纲不匹配/);
-  assert.throws(() => convert(1, 'kg', 'F'), /量纲不匹配/);
+  assert.throws(() => convert(100, 'C', 'kg'), /dimension mismatch/);
+  assert.throws(() => convert(1, 'kg', 'F'), /dimension mismatch/);
 });
 
 test('supportedUnits includes every table plus temperature', () => {

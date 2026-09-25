@@ -67,7 +67,7 @@ test('tools/call with a dimension mismatch reports isError', () => {
     });
   });
   assert.equal(msg.result.isError, true);
-  assert.match(msg.result.content[0].text, /量纲不匹配/);
+  assert.match(msg.result.content[0].text, /dimension mismatch/);
 });
 
 test('tools/call with malformed arguments reports isError', () => {
@@ -128,7 +128,7 @@ test('tools/call with a batch reports isError when any item fails, without dropp
   const payload = JSON.parse(msg.result.content[0].text);
   assert.equal(payload[0].value, 1000);
   assert.equal(payload[0].error, undefined);
-  assert.match(payload[1].error, /量纲不匹配/);
+  assert.match(payload[1].error, /dimension mismatch/);
 });
 
 test('tools/call with a malformed batch item normalizes non-string from/to for reporting', () => {
